@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLAUDE.md 문서 가이드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+            border-bottom: 3px solid #000;
+            padding-bottom: 15px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-btn.active {
+            background: #333;
+        }
+
+        .section {
+            display: none;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h2 {
+            color: #000;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-left: 5px solid #000;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            font-size: 1.4em;
+        }
+
+        p {
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+            font-size: 0.95em;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe6cc 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #ff9800;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #2196f3;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+            }
+
+            .nav-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CLAUDE.md 문서 가이드</h1>
+        <p class="subtitle">상황별 성경구절 앱 개발 가이드</p>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" data-section="overview">프로젝트 개요</button>
+            <button class="nav-btn" data-section="architecture">아키텍처</button>
+            <button class="nav-btn" data-section="running">실행 방법</button>
+            <button class="nav-btn" data-section="modify">수정 방법</button>
+        </div>
+
+        <!-- 프로젝트 개요 섹션 -->
+        <div class="section active" id="overview">
+            <h2>📋 프로젝트 개요</h2>
+            <p>
+                상황별 성경구절을 보여주는 <strong>단일 페이지 웹 애플리케이션(SPA)</strong>입니다.
+                모든 애플리케이션 코드가 <code>index.html</code>에 포함되어 있으며,
+                CSS와 JavaScript가 임베디드 형태로 작성되어 있습니다.
+            </p>
+
+            <div class="highlight-box">
+                <h3>✨ 주요 특징</h3>
+                <ul>
+                    <li>별도의 빌드 과정이 필요하지 않음</li>
+                    <li>외부 의존성 없음</li>
+                    <li>단일 HTML 파일로 완전한 기능 제공</li>
+                    <li>브라우저만 있으면 즉시 실행 가능</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 아키텍처 섹션 -->
+        <div class="section" id="architecture">
+            <h2>🏗️ 아키텍처</h2>
+
+            <h3>단일 파일 구조</h3>
+            <p>모든 HTML 마크업, CSS 스타일링, JavaScript 로직이 <code>index.html</code>에 포함되어 있습니다:</p>
+
+            <ul>
+                <li><strong>HTML (174-195줄)</strong>: 카테고리 버튼과 구절 표시 컨테이너가 있는 메인 구조</li>
+                <li><strong>CSS (7-172줄)</strong>: 그라데이션 디자인, 애니메이션, 반응형 중단점을 포함한 스타일</li>
+                <li><strong>JavaScript (197-359줄)</strong>: 구절 데이터 객체와 이벤트 처리 로직</li>
+            </ul>
+
+            <h3>데이터 구조</h3>
+            <p><code>verses</code> 객체 (198-323줄)는 JavaScript 객체 리터럴로 구성됩니다:</p>
+
+            <div class="info-box">
+                <ul>
+                    <li><strong>키</strong>: 한글 카테고리 이름 (예: "힘들때", "감사", "불안")</li>
+                    <li><strong>값</strong>: 구절 객체들의 배열이며, 각 객체는 <code>text</code>와 <code>reference</code> 속성을 포함</li>
+                    <li><strong>중요</strong>: 버튼의 <code>data-category</code> 속성은 이 키들과 정확히 일치해야 함</li>
+                </ul>
+            </div>
+
+            <h3>UI 흐름</h3>
+            <ol>
+                <li>사용자가 카테고리 버튼 클릭 → 카테고리 이름과 함께 <code>showVerse()</code> 함수 호출</li>
+                <li>함수가 해당 카테고리 배열에서 무작위로 구절 선택</li>
+                <li>선택된 구절 텍스트와 출처로 DOM 업데이트</li>
+                <li>"다른 구절 보기" 버튼으로 같은 카테고리 내 다른 구절 순환 가능</li>
+            </ol>
+        </div>
+
+        <!-- 실행 방법 섹션 -->
+        <div class="section" id="running">
+            <h2>🚀 애플리케이션 실행</h2>
+
+            <div class="highlight-box">
+                <h3>실행 방법은 매우 간단합니다!</h3>
+                <p>최신 웹 브라우저에서 <code>index.html</code>을 열기만 하면 됩니다.</p>
+            </div>
+
+            <h3>필요하지 않은 것들</h3>
+            <ul>
+                <li>❌ 서버 설치</li>
+                <li>❌ 빌드 단계</li>
+                <li>❌ 의존성 설치 (npm install 등)</li>
+                <li>❌ 데이터베이스</li>
+            </ul>
+
+            <p>그냥 파일을 더블클릭하거나 브라우저로 드래그하면 바로 실행됩니다!</p>
+        </div>
+
+        <!-- 수정 방법 섹션 -->
+        <div class="section" id="modify">
+            <h2>✏️ 수정 방법</h2>
+
+            <h3>1. 새 카테고리 추가</h3>
+            <div class="code-block">
+// 1단계: verses 객체에 새 카테고리 추가
+const verses = {
+    // ... 기존 카테고리들 ...
+    새카테고리: [
+        {
+            text: "구절 내용",
+            reference: "출처"
+        }
+    ]
+};
+
+// 2단계: HTML에 버튼 추가
+&lt;button class="category-btn" data-category="새카테고리"&gt;
+    새 카테고리
+&lt;/button&gt;
+            </div>
+
+            <div class="info-box">
+                <p><strong>⚠️ 주의:</strong> 버튼의 <code>data-category</code> 속성 값은 <code>verses</code> 객체의 키와 정확히 일치해야 합니다!</p>
+            </div>
+
+            <h3>2. 기존 카테고리에 구절 추가</h3>
+            <div class="code-block">
+// verses 객체에서 해당 카테고리 찾기
+힘들때: [
+    // ... 기존 구절들 ...
+    {
+        text: "새로운 구절 내용",
+        reference: "새로운 출처"
+    }
+]
+            </div>
+
+            <h3>3. 스타일 수정</h3>
+            <ul>
+                <li><strong>메인 그라데이션 색상</strong>: <code>#667eea</code>와 <code>#764ba2</code> (16줄, 67줄)</li>
+                <li><strong>모바일 중단점</strong>: 600px (149줄)</li>
+                <li><strong>애니메이션</strong>: <code>fadeIn</code> (34줄), <code>slideIn</code> (97줄)</li>
+            </ul>
+
+            <div class="highlight-box">
+                <h3>💡 팁</h3>
+                <p>색상을 변경하려면 해당 줄 번호의 색상 코드를 원하는 값으로 바꾸면 됩니다.
+                   CSS의 <code>background</code> 속성에서 색상 값을 찾을 수 있습니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 네비게이션 버튼 기능
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.section');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetSection = btn.getAttribute('data-section');
+
+                // 모든 버튼과 섹션의 active 클래스 제거
+                navBtns.forEach(b => b.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+
+                // 클릭된 버튼과 해당 섹션에 active 클래스 추가
+                btn.classList.add('active');
+                document.getElementById(targetSection).classList.add('active');
+
+                // 부드러운 스크롤
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 키보드 네비게이션 (화살표 키)
+        let currentSectionIndex = 0;
+        const sectionIds = ['overview', 'architecture', 'running', 'modify'];
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentSectionIndex < sectionIds.length - 1) {
+                currentSectionIndex++;
+                activateSection(currentSectionIndex);
+            } else if (e.key === 'ArrowLeft' && currentSectionIndex > 0) {
+                currentSectionIndex--;
+                activateSection(currentSectionIndex);
+            }
+        });
+
+        function activateSection(index) {
+            const sectionId = sectionIds[index];
+            const btn = document.querySelector(`[data-section="${sectionId}"]`);
+            btn.click();
+        }
+    </script>
+</body>
+</html>
