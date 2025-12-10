@@ -1,0 +1,9 @@
+name = "mytodo"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "public"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "mytodo-db"
+database_id = "63cef4be-5120-4f2c-b257-a68f4909ce32"

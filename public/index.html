@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyTODO - 할일 관리</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'toss-blue': '#3182F6',
+            'toss-gray': '#F9FAFB',
+          },
+          fontFamily: {
+            'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+    .checked-animation {
+      animation: fadeIn 0.2s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-toss-gray min-h-screen font-sans">
+  <div class="max-w-2xl mx-auto px-4 py-8 md:py-12">
+    <!-- Header -->
+    <header class="mb-8 md:mb-12">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">MyTODO</h1>
+      <p class="text-gray-500 text-sm md:text-base">오늘 할 일을 관리하세요</p>
+    </header>
+
+    <!-- Add Todo Form -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mb-6">
+      <form id="add-todo-form" class="flex gap-2">
+        <input
+          type="text"
+          id="todo-input"
+          placeholder="할 일을 입력하세요"
+          class="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-toss-blue focus:border-transparent transition-all"
+          required
+        >
+        <button
+          type="submit"
+          class="px-6 py-3 bg-toss-blue text-white rounded-xl font-semibold hover:bg-blue-600 active:scale-95 transition-all whitespace-nowrap"
+        >
+          추가
+        </button>
+      </form>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="bg-white rounded-2xl shadow-sm p-4">
+        <p class="text-gray-500 text-sm mb-1">전체</p>
+        <p class="text-2xl font-bold text-gray-900" id="total-count">0</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-4">
+        <p class="text-gray-500 text-sm mb-1">완료</p>
+        <p class="text-2xl font-bold text-toss-blue" id="completed-count">0</p>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex gap-2 mb-4">
+      <button
+        class="filter-btn px-4 py-2 rounded-lg font-medium transition-all active"
+        data-filter="all"
+      >
+        전체
+      </button>
+      <button
+        class="filter-btn px-4 py-2 rounded-lg font-medium transition-all"
+        data-filter="active"
+      >
+        진행중
+      </button>
+      <button
+        class="filter-btn px-4 py-2 rounded-lg font-medium transition-all"
+        data-filter="completed"
+      >
+        완료
+      </button>
+    </div>
+
+    <!-- Todo List -->
+    <div id="todo-list" class="space-y-3">
+      <!-- Todos will be rendered here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden bg-white rounded-2xl shadow-sm p-12 text-center">
+      <div class="text-6xl mb-4">📝</div>
+      <p class="text-gray-400 text-lg">할 일이 없습니다</p>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="bg-white rounded-2xl shadow-sm p-12 text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-toss-blue mx-auto mb-4"></div>
+      <p class="text-gray-400">불러오는 중...</p>
+    </div>
+  </div>
+
+  <script>
+    let currentFilter = 'all';
+    let todos = [];
+
+    // API Base URL
+    const API_URL = '/api/todos';
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTodos();
+      setupEventListeners();
+    });
+
+    // Setup Event Listeners
+    function setupEventListeners() {
+      // Add todo form
+      document.getElementById('add-todo-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('todo-input');
+        const title = input.value.trim();
+
+        if (title) {
+          await addTodo(title);
+          input.value = '';
+        }
+      });
+
+      // Filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          currentFilter = e.target.dataset.filter;
+          renderTodos();
+        });
+      });
+    }
+
+    // Load todos from API
+    async function loadTodos() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        todos = data.todos || [];
+        renderTodos();
+        document.getElementById('loading-state').classList.add('hidden');
+      } catch (error) {
+        console.error('Failed to load todos:', error);
+        document.getElementById('loading-state').innerHTML =
+          '<p class="text-red-500">데이터를 불러오는데 실패했습니다</p>';
+      }
+    }
+
+    // Add new todo
+    async function addTodo(title) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title })
+        });
+        const data = await response.json();
+        todos.unshift(data.todo);
+        renderTodos();
+      } catch (error) {
+        console.error('Failed to add todo:', error);
+        alert('할 일 추가에 실패했습니다');
+      }
+    }
+
+    // Toggle todo completion
+    async function toggleTodo(id) {
+      const todo = todos.find(t => t.id === id);
+      if (!todo) return;
+
+      try {
+        const response = await fetch(`${API_URL}/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ completed: todo.completed ? 0 : 1 })
+        });
+        const data = await response.json();
+        const index = todos.findIndex(t => t.id === id);
+        todos[index] = data.todo;
+        renderTodos();
+      } catch (error) {
+        console.error('Failed to toggle todo:', error);
+      }
+    }
+
+    // Delete todo
+    async function deleteTodo(id) {
+      if (!confirm('정말 삭제하시겠습니까?')) return;
+
+      try {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        todos = todos.filter(t => t.id !== id);
+        renderTodos();
+      } catch (error) {
+        console.error('Failed to delete todo:', error);
+        alert('삭제에 실패했습니다');
+      }
+    }
+
+    // Render todos
+    function renderTodos() {
+      const filteredTodos = todos.filter(todo => {
+        if (currentFilter === 'active') return !todo.completed;
+        if (currentFilter === 'completed') return todo.completed;
+        return true;
+      });
+
+      // Update stats
+      document.getElementById('total-count').textContent = todos.length;
+      document.getElementById('completed-count').textContent =
+        todos.filter(t => t.completed).length;
+
+      // Render list
+      const listEl = document.getElementById('todo-list');
+      const emptyEl = document.getElementById('empty-state');
+
+      if (filteredTodos.length === 0) {
+        listEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      listEl.classList.remove('hidden');
+      emptyEl.classList.add('hidden');
+
+      listEl.innerHTML = filteredTodos.map(todo => `
+        <div class="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all fade-in">
+          <button
+            onclick="toggleTodo(${todo.id})"
+            class="flex-shrink-0 w-6 h-6 rounded-full border-2 transition-all ${
+              todo.completed
+                ? 'bg-toss-blue border-toss-blue'
+                : 'border-gray-300 hover:border-toss-blue'
+            }"
+          >
+            ${todo.completed ? `
+              <svg class="w-full h-full text-white checked-animation" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+            ` : ''}
+          </button>
+          <span class="flex-1 ${todo.completed ? 'line-through text-gray-400' : 'text-gray-900'}">
+            ${escapeHtml(todo.title)}
+          </span>
+          <button
+            onclick="deleteTodo(${todo.id})"
+            class="flex-shrink-0 w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+          >
+            <svg class="w-full h-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // Utility: Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Add filter button styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .filter-btn {
+        color: #6B7280;
+        background: white;
+      }
+      .filter-btn.active {
+        color: #3182F6;
+        background: #EFF6FF;
+        font-weight: 600;
+      }
+      .filter-btn:hover:not(.active) {
+        background: #F3F4F6;
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

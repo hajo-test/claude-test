@@ -1,0 +1,12 @@
+{
+  "name": "mytodo",
+  "version": "1.0.0",
+  "description": "개인용 할일 관리 웹서비스",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public"
+  },
+  "keywords": ["todo", "cloudflare", "pages"],
+  "author": "",
+  "license": "MIT"
+}
