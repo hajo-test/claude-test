@@ -26,7 +26,7 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
   try {
-    const { title } = await context.request.json();
+    const { title, description } = await context.request.json();
 
     if (!title || title.trim() === '') {
       return new Response(
@@ -40,9 +40,9 @@ export async function onRequestPost(context) {
 
     // Insert new todo
     const result = await context.env.DB.prepare(
-      'INSERT INTO todos (title, completed) VALUES (?, 0)'
+      'INSERT INTO todos (title, description, completed) VALUES (?, ?, 0)'
     )
-      .bind(title.trim())
+      .bind(title.trim(), description ? description.trim() : null)
       .run();
 
     // Fetch the created todo

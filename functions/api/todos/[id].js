@@ -32,6 +32,11 @@ export async function onRequestPut(context) {
       values.push(body.title);
     }
 
+    if (body.description !== undefined) {
+      updates.push('description = ?');
+      values.push(body.description);
+    }
+
     if (body.completed !== undefined) {
       updates.push('completed = ?');
       values.push(body.completed);
